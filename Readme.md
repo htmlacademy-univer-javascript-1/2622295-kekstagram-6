@@ -1,7 +1,7 @@
 # Личный проект «Кекстаграм»
 
 * Студент: [Мария  Антонова](https://up.htmlacademy.ru/univer-js1/6/user/2622295).
-* Наставник: `[Евгений Лепёшкин](https://htmlacademy.ru/profile/id2668901)`.
+* Наставник: [`Евгений Лепёшкин`](https://htmlacademy.ru/profile/id2668901).
 
 ---
 
