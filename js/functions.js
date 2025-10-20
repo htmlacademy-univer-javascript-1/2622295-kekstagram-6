@@ -15,3 +15,17 @@ function isPalindrome(str){
   return true;
 }
 
+function isMeetingWithinWorkHours(workStart, workEnd, meetingStart, duration) {
+  const [workStartHours, workStartMinutes] = workStart.split(':').map(Number);
+  const workStartTotal = workStartHours * 60 + workStartMinutes;
+
+  const [workEndHours, workEndMinutes] = workEnd.split(':').map(Number);
+  const workEndTotal = workEndHours * 60 + workEndMinutes;
+
+  const [meetingStartHours, meetingStartMinutes] = meetingStart.split(':').map(Number);
+  const meetingStartTotal = meetingStartHours * 60 + meetingStartMinutes;
+
+  const meetingEndTotal = meetingStartTotal + duration;
+
+  return meetingStartTotal >= workStartTotal && meetingEndTotal <= workEndTotal;
+}
