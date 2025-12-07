@@ -1,5 +1,5 @@
 import { generatePhotosArray } from './data.js';
-import { renderThumbnails } from './pictures.js';
+import { renderThumbnails, initThumbnailsHandlers } from './pictures.js';
 
 const photosArray = generatePhotosArray();
 
@@ -11,3 +11,10 @@ export { photosArray };
 document.addEventListener('DOMContentLoaded', () => {
   renderThumbnails();
 });
+
+const initApp = () => {
+  renderThumbnails();
+  initThumbnailsHandlers();
+};
+
+document.addEventListener('DOMContentLoaded', initApp);
