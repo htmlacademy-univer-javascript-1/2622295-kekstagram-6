@@ -1,3 +1,5 @@
+import { MESSAGES, NAMES } from './data.js';
+
 const getRandomInteger = (min, max) => {
   const lower = Math.ceil(Math.min(min, max));
   const upper = Math.floor(Math.max(min, max));
@@ -14,4 +16,23 @@ const createIdGenerator = () => {
   };
 };
 
-export { getRandomInteger, getRandomArrayElement, createIdGenerator };
+const createComment = () => {
+  const generateCommentId = createIdGenerator();
+  const messageCount = getRandomInteger(1, 2);
+  let message = '';
+  for (let i = 0; i < messageCount; i++) {
+    message += getRandomArrayElement(MESSAGES);
+    if (i < messageCount - 1) {
+      message += ' ';
+    }
+  }
+  return {
+    id: generateCommentId(),
+    avatar: `img/avatar-${getRandomInteger(1, 6)}.svg`,
+    message: message,
+    name: getRandomArrayElement(NAMES)
+  };
+};
+
+export { getRandomInteger, getRandomArrayElement, createIdGenerator, createComment };
+
