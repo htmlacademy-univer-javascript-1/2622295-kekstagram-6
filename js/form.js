@@ -164,26 +164,22 @@ const onDocumentKeydown = (evt) => {
   }
 };
 
+const FILE_TYPES = ['jpg', 'jpeg', 'png'];
+const photoPreview = document.querySelector('.img-upload__preview img');
+const effectsPreviews = document.querySelectorAll('.effects__preview');
 
 // Обработчик выбора файла
 const onFileInputChange = () => {
   const file = fileInput.files[0];
+  const fileName = file.name.toLowerCase();
 
-  if (file) {
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      // eslint-disable-next-line no-alert
-      alert('Пожалуйста, выберите файл изображения в формате JPEG, PNG, GIF или WebP');
-      resetForm();
-      return;
-    }
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      // eslint-disable-next-line no-alert
-      alert('Размер файла не должен превышать 5MB');
-      resetForm();
-      return;
-    }
+  const matches = FILE_TYPES.some((it) => fileName.endsWith(it));
+
+  if (matches) {
+    photoPreview.src = URL.createObjectURL(file);
+    effectsPreviews.forEach((preview) => {
+      preview.style.backgroundImage = `url(${URL.createObjectURL(file)})`;
+    });
     openForm();
   }
 };
