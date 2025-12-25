@@ -33,7 +33,7 @@ const renderCommentsPortion = () => {
   });
   commentsShown += commentsToShow.length;
   // Обновляем счетчик комментариев
-  commentsCount.innerHTML = `${commentsShown} из <span class="comments-count">${currentComments.length}</span> комментариев`;
+  commentsCount.innerHTML = `<span class="social__comment-shown-count">${commentsShown}</span> из <span class="social__comment-total-count">${currentComments.length}</span> комментариев`;
   // Скрываем кнопку, если все комментарии показаны
   if (commentsShown >= currentComments.length) {
     commentsLoader.classList.add('hidden');
@@ -56,14 +56,13 @@ const openFullPhoto = (photoData) => {
   bigPicture.querySelector('.big-picture__img img').src = photoData.url;
   bigPicture.querySelector('.big-picture__img img').alt = photoData.description;
   bigPicture.querySelector('.likes-count').textContent = photoData.likes;
-  bigPicture.querySelector('.comments-count').textContent = photoData.comments.length;
+  bigPicture.querySelector('.social__comment-total-count').textContent = photoData.comments.length;
   bigPicture.querySelector('.social__caption').textContent = photoData.description;
   // Сохраняем комментарии и отображаем первую порцию
   currentComments = photoData.comments;
   renderCommentsPortion();
-  // Показываем блоки счётчика комментариев и загрузки новых комментариев
+  // Показываем блоки счётчика комментариев
   commentsCount.classList.remove('hidden');
-  commentsLoader.classList.remove('hidden');
   // Показываем окно
   bigPicture.classList.remove('hidden');
   // Добавляем класс для body
