@@ -1,10 +1,6 @@
-/*! nouislider - 15.6.0 - 05/01/2022 */
 (function (global, factory) {
-  // eslint-disable-next-line no-unused-expressions, no-nested-ternary, no-undef
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-    // eslint-disable-next-line no-undef
     typeof define === 'function' && define.amd ? define(['exports'], factory) :
-      // eslint-disable-next-line no-undef
       (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.noUiSlider = {}));
 })(this, ((exports) => {
 
@@ -119,13 +115,11 @@
   function getPageOffset(doc) {
     const supportPageOffset = window.pageXOffset !== undefined;
     const isCSS1Compat = (doc.compatMode || '') === 'CSS1Compat';
-    // eslint-disable-next-line no-nested-ternary
     const x = supportPageOffset
       ? window.pageXOffset
       : isCSS1Compat
         ? doc.documentElement.scrollLeft
         : doc.body.scrollLeft;
-    // eslint-disable-next-line no-nested-ternary
     const y = supportPageOffset
       ? window.pageYOffset
       : isCSS1Compat
@@ -142,7 +136,6 @@
   function getActions() {
     // Determine the events to bind. IE11 implements pointerEvents without
     // a prefix, which breaks compatibility with the IE10 implementation.
-    // eslint-disable-next-line no-nested-ternary
     return window.navigator.pointerEnabled
       ? {
         start: 'pointerdown',
@@ -166,17 +159,17 @@
   function getSupportsPassive() {
     let supportsPassive = false;
     /* eslint-disable */
-      try {
-          var opts = Object.defineProperty({}, "passive", {
-              get: function () {
-                  supportsPassive = true;
-              },
-          });
-          // @ts-ignore
-          window.addEventListener("test", null, opts);
-      }
-      catch (e) { }
-      /* eslint-enable */
+        try {
+            var opts = Object.defineProperty({}, "passive", {
+                get: function () {
+                    supportsPassive = true;
+                },
+            });
+            // @ts-ignore
+            window.addEventListener("test", null, opts);
+        }
+        catch (e) { }
+        /* eslint-enable */
     return supportsPassive;
   }
   function getSupportsTouchActionNone() {
@@ -256,278 +249,231 @@
   //endregion
   //region Spectrum
   const Spectrum = /** @class */ (function () {
-    // eslint-disable-next-line no-shadow
-    class Spectrum {
-      constructor(entry, snap, singleStep) {
-        this.xPct = [];
-        this.xVal = [];
-        this.xSteps = [];
-        this.xNumSteps = [];
-        this.xHighestCompleteStep = [];
-        this.xSteps = [singleStep || false];
-        this.xNumSteps = [false];
-        this.snap = snap;
-        let index;
-        const ordered = [];
-        // Map the object keys to an array.
-        // eslint-disable-next-line no-shadow
-        Object.keys(entry).forEach((index) => {
-          ordered.push([asArray(entry[index]), index]);
-        });
-        // Sort all entries by value (numeric sort).
-        ordered.sort((a, b) => a[0][0] - b[0][0]);
-        // Convert all entries to subranges.
-        for (index = 0; index < ordered.length; index++) {
-          this.handleEntryPoint(ordered[index][1], ordered[index][0]);
-        }
-        // Store the actual step values.
-        // xSteps is sorted in the same order as xPct and xVal.
-        this.xNumSteps = this.xSteps.slice(0);
-        // Convert all numeric steps to the percentage of the subrange they represent.
-        for (index = 0; index < this.xNumSteps.length; index++) {
-          this.handleStepPoint(index, this.xNumSteps[index]);
-        }
+    function Spectrum(entry, snap, singleStep) {
+      this.xPct = [];
+      this.xVal = [];
+      this.xSteps = [];
+      this.xNumSteps = [];
+      this.xHighestCompleteStep = [];
+      this.xSteps = [singleStep || false];
+      this.xNumSteps = [false];
+      this.snap = snap;
+      let index;
+      const ordered = [];
+      // Map the object keys to an array.
+      Object.keys(entry).forEach((index) => {
+        ordered.push([asArray(entry[index]), index]);
+      });
+      // Sort all entries by value (numeric sort).
+      ordered.sort((a, b) => a[0][0] - b[0][0]);
+      // Convert all entries to subranges.
+      for (index = 0; index < ordered.length; index++) {
+        this.handleEntryPoint(ordered[index][1], ordered[index][0]);
       }
-
-      getDistance(value) {
-        const distances = [];
-        for (let index = 0; index < this.xNumSteps.length - 1; index++) {
-          distances[index] = fromPercentage(this.xVal, value, index);
-        }
-        return distances;
-      }
-
-      // Calculate the percentual distance over the whole scale of ranges.
-      // direction: 0 = backwards / 1 = forwards
-      getAbsoluteDistance(value, distances, direction) {
-        // eslint-disable-next-line camelcase
-        let xPct_index = 0;
-        // Calculate range where to start calculation
-        if (value < this.xPct[this.xPct.length - 1]) {
-          // eslint-disable-next-line camelcase
-          while (value > this.xPct[xPct_index + 1]) {
-            // eslint-disable-next-line camelcase
-            xPct_index++;
-          }
-        }
-        else if (value === this.xPct[this.xPct.length - 1]) {
-          // eslint-disable-next-line camelcase
-          xPct_index = this.xPct.length - 2;
-        }
-        // If looking backwards and the value is exactly at a range separator then look one range further
-        // eslint-disable-next-line camelcase
-        if (!direction && value === this.xPct[xPct_index + 1]) {
-          // eslint-disable-next-line camelcase
-          xPct_index++;
-        }
-        if (distances === null) {
-          distances = [];
-        }
-        // eslint-disable-next-line camelcase
-        let start_factor;
-        // eslint-disable-next-line camelcase
-        let rest_factor = 1;
-        // eslint-disable-next-line camelcase
-        let rest_rel_distance = distances[xPct_index];
-        // eslint-disable-next-line camelcase
-        let range_pct = 0;
-        // eslint-disable-next-line camelcase
-        let rel_range_distance = 0;
-        // eslint-disable-next-line camelcase
-        let abs_distance_counter = 0;
-        // eslint-disable-next-line camelcase
-        let range_counter = 0;
-        // Calculate what part of the start range the value is
-        if (direction) {
-          // eslint-disable-next-line camelcase
-          start_factor = (value - this.xPct[xPct_index]) / (this.xPct[xPct_index + 1] - this.xPct[xPct_index]);
-        }
-        else {
-          // eslint-disable-next-line camelcase
-          start_factor = (this.xPct[xPct_index + 1] - value) / (this.xPct[xPct_index + 1] - this.xPct[xPct_index]);
-        }
-        // Do until the complete distance across ranges is calculated
-        // eslint-disable-next-line camelcase
-        while (rest_rel_distance > 0) {
-          // Calculate the percentage of total range
-          // eslint-disable-next-line camelcase
-          range_pct = this.xPct[xPct_index + 1 + range_counter] - this.xPct[xPct_index + range_counter];
-          // Detect if the margin, padding or limit is larger then the current range and calculate
-          // eslint-disable-next-line camelcase
-          if (distances[xPct_index + range_counter] * rest_factor + 100 - start_factor * 100 > 100) {
-            // If larger then take the percentual distance of the whole range
-            // eslint-disable-next-line camelcase
-            rel_range_distance = range_pct * start_factor;
-            // Rest factor of relative percentual distance still to be calculated
-            // eslint-disable-next-line camelcase
-            rest_factor = (rest_rel_distance - 100 * start_factor) / distances[xPct_index + range_counter];
-            // Set start factor to 1 as for next range it does not apply.
-            // eslint-disable-next-line camelcase
-            start_factor = 1;
-          }
-          else {
-            // If smaller or equal then take the percentual distance of the calculate percentual part of that range
-            // eslint-disable-next-line camelcase
-            rel_range_distance = ((distances[xPct_index + range_counter] * range_pct) / 100) * rest_factor;
-            // No rest left as the rest fits in current range
-            // eslint-disable-next-line camelcase
-            rest_factor = 0;
-          }
-          if (direction) {
-            // eslint-disable-next-line camelcase
-            abs_distance_counter = abs_distance_counter - rel_range_distance;
-            // Limit range to first range when distance becomes outside of minimum range
-            // eslint-disable-next-line camelcase
-            if (this.xPct.length + range_counter >= 1) {
-              // eslint-disable-next-line camelcase
-              range_counter--;
-            }
-          }
-          else {
-            // eslint-disable-next-line camelcase
-            abs_distance_counter = abs_distance_counter + rel_range_distance;
-            // Limit range to last range when distance becomes outside of maximum range
-            // eslint-disable-next-line camelcase
-            if (this.xPct.length - range_counter >= 1) {
-              // eslint-disable-next-line camelcase
-              range_counter++;
-            }
-          }
-          // Rest of relative percentual distance still to be calculated
-          // eslint-disable-next-line camelcase
-          rest_rel_distance = distances[xPct_index + range_counter] * rest_factor;
-        }
-        // eslint-disable-next-line camelcase
-        return value + abs_distance_counter;
-      }
-
-      toStepping(value) {
-        value = toStepping(this.xVal, this.xPct, value);
-        return value;
-      }
-
-      fromStepping(value) {
-        return fromStepping(this.xVal, this.xPct, value);
-      }
-
-      getStep(value) {
-        value = getStep(this.xPct, this.xSteps, this.snap, value);
-        return value;
-      }
-
-      getDefaultStep(value, isDown, size) {
-        let j = getJ(value, this.xPct);
-        // When at the top or stepping down, look at the previous sub-range
-        if (value === 100 || (isDown && value === this.xPct[j - 1])) {
-          j = Math.max(j - 1, 1);
-        }
-        return (this.xVal[j] - this.xVal[j - 1]) / size;
-      }
-
-      getNearbySteps(value) {
-        const j = getJ(value, this.xPct);
-        return {
-          stepBefore: {
-            startValue: this.xVal[j - 2],
-            step: this.xNumSteps[j - 2],
-            highestStep: this.xHighestCompleteStep[j - 2],
-          },
-          thisStep: {
-            startValue: this.xVal[j - 1],
-            step: this.xNumSteps[j - 1],
-            highestStep: this.xHighestCompleteStep[j - 1],
-          },
-          stepAfter: {
-            startValue: this.xVal[j],
-            step: this.xNumSteps[j],
-            highestStep: this.xHighestCompleteStep[j],
-          },
-        };
-      }
-
-      countStepDecimals() {
-        const stepDecimals = this.xNumSteps.map(countDecimals);
-        return Math.max.apply(null, stepDecimals);
-      }
-
-      hasNoSize() {
-        return this.xVal[0] === this.xVal[this.xVal.length - 1];
-      }
-
-      // Outside testing
-      convert(value) {
-        return this.getStep(this.toStepping(value));
-      }
-
-      handleEntryPoint(index, value) {
-        let percentage;
-        // Covert min/max syntax to 0 and 100.
-        if (index === 'min') {
-          percentage = 0;
-        }
-        else if (index === 'max') {
-          percentage = 100;
-        }
-        else {
-          percentage = parseFloat(index);
-        }
-        // Check for correct input.
-        if (!isNumeric(percentage) || !isNumeric(value[0])) {
-          throw new Error('noUiSlider: \'range\' value isn\'t numeric.');
-        }
-        // Store values.
-        this.xPct.push(percentage);
-        this.xVal.push(value[0]);
-        const value1 = Number(value[1]);
-        // NaN will evaluate to false too, but to keep
-        // logging clear, set step explicitly. Make sure
-        // not to override the 'step' setting with false.
-        if (!percentage) {
-          if (!isNaN(value1)) {
-            this.xSteps[0] = value1;
-          }
-        }
-        else {
-          this.xSteps.push(isNaN(value1) ? false : value1);
-        }
-        this.xHighestCompleteStep.push(0);
-      }
-
-      handleStepPoint(i, n) {
-        // Ignore 'false' stepping.
-        if (!n) {
-          return;
-        }
-        // Step over zero-length ranges (#948);
-        if (this.xVal[i] === this.xVal[i + 1]) {
-          this.xSteps[i] = this.xHighestCompleteStep[i] = this.xVal[i];
-          return;
-        }
-        // Factor to range ratio
-        this.xSteps[i] =
-          fromPercentage([this.xVal[i], this.xVal[i + 1]], n, 0) / subRangeRatio(this.xPct[i], this.xPct[i + 1]);
-        const totalSteps = (this.xVal[i + 1] - this.xVal[i]) / this.xNumSteps[i];
-        const highestStep = Math.ceil(Number(totalSteps.toFixed(3)) - 1);
-        const step = this.xVal[i] + this.xNumSteps[i] * highestStep;
-        this.xHighestCompleteStep[i] = step;
+      // Store the actual step values.
+      // xSteps is sorted in the same order as xPct and xVal.
+      this.xNumSteps = this.xSteps.slice(0);
+      // Convert all numeric steps to the percentage of the subrange they represent.
+      for (index = 0; index < this.xNumSteps.length; index++) {
+        this.handleStepPoint(index, this.xNumSteps[index]);
       }
     }
+    Spectrum.prototype.getDistance = function (value) {
+      const distances = [];
+      for (let index = 0; index < this.xNumSteps.length - 1; index++) {
+        distances[index] = fromPercentage(this.xVal, value, index);
+      }
+      return distances;
+    };
+    // Calculate the percentual distance over the whole scale of ranges.
+    // direction: 0 = backwards / 1 = forwards
+    Spectrum.prototype.getAbsoluteDistance = function (value, distances, direction) {
+      let xPct_index = 0;
+      // Calculate range where to start calculation
+      if (value < this.xPct[this.xPct.length - 1]) {
+        while (value > this.xPct[xPct_index + 1]) {
+          xPct_index++;
+        }
+      }
+      else if (value === this.xPct[this.xPct.length - 1]) {
+        xPct_index = this.xPct.length - 2;
+      }
+      // If looking backwards and the value is exactly at a range separator then look one range further
+      if (!direction && value === this.xPct[xPct_index + 1]) {
+        xPct_index++;
+      }
+      if (distances === null) {
+        distances = [];
+      }
+      let start_factor;
+      let rest_factor = 1;
+      let rest_rel_distance = distances[xPct_index];
+      let range_pct = 0;
+      let rel_range_distance = 0;
+      let abs_distance_counter = 0;
+      let range_counter = 0;
+      // Calculate what part of the start range the value is
+      if (direction) {
+        start_factor = (value - this.xPct[xPct_index]) / (this.xPct[xPct_index + 1] - this.xPct[xPct_index]);
+      }
+      else {
+        start_factor = (this.xPct[xPct_index + 1] - value) / (this.xPct[xPct_index + 1] - this.xPct[xPct_index]);
+      }
+      // Do until the complete distance across ranges is calculated
+      while (rest_rel_distance > 0) {
+        // Calculate the percentage of total range
+        range_pct = this.xPct[xPct_index + 1 + range_counter] - this.xPct[xPct_index + range_counter];
+        // Detect if the margin, padding or limit is larger then the current range and calculate
+        if (distances[xPct_index + range_counter] * rest_factor + 100 - start_factor * 100 > 100) {
+          // If larger then take the percentual distance of the whole range
+          rel_range_distance = range_pct * start_factor;
+          // Rest factor of relative percentual distance still to be calculated
+          rest_factor = (rest_rel_distance - 100 * start_factor) / distances[xPct_index + range_counter];
+          // Set start factor to 1 as for next range it does not apply.
+          start_factor = 1;
+        }
+        else {
+          // If smaller or equal then take the percentual distance of the calculate percentual part of that range
+          rel_range_distance = ((distances[xPct_index + range_counter] * range_pct) / 100) * rest_factor;
+          // No rest left as the rest fits in current range
+          rest_factor = 0;
+        }
+        if (direction) {
+          abs_distance_counter = abs_distance_counter - rel_range_distance;
+          // Limit range to first range when distance becomes outside of minimum range
+          if (this.xPct.length + range_counter >= 1) {
+            range_counter--;
+          }
+        }
+        else {
+          abs_distance_counter = abs_distance_counter + rel_range_distance;
+          // Limit range to last range when distance becomes outside of maximum range
+          if (this.xPct.length - range_counter >= 1) {
+            range_counter++;
+          }
+        }
+        // Rest of relative percentual distance still to be calculated
+        rest_rel_distance = distances[xPct_index + range_counter] * rest_factor;
+      }
+      return value + abs_distance_counter;
+    };
+    Spectrum.prototype.toStepping = function (value) {
+      value = toStepping(this.xVal, this.xPct, value);
+      return value;
+    };
+    Spectrum.prototype.fromStepping = function (value) {
+      return fromStepping(this.xVal, this.xPct, value);
+    };
+    Spectrum.prototype.getStep = function (value) {
+      value = getStep(this.xPct, this.xSteps, this.snap, value);
+      return value;
+    };
+    Spectrum.prototype.getDefaultStep = function (value, isDown, size) {
+      let j = getJ(value, this.xPct);
+      // When at the top or stepping down, look at the previous sub-range
+      if (value === 100 || (isDown && value === this.xPct[j - 1])) {
+        j = Math.max(j - 1, 1);
+      }
+      return (this.xVal[j] - this.xVal[j - 1]) / size;
+    };
+    Spectrum.prototype.getNearbySteps = function (value) {
+      const j = getJ(value, this.xPct);
+      return {
+        stepBefore: {
+          startValue: this.xVal[j - 2],
+          step: this.xNumSteps[j - 2],
+          highestStep: this.xHighestCompleteStep[j - 2],
+        },
+        thisStep: {
+          startValue: this.xVal[j - 1],
+          step: this.xNumSteps[j - 1],
+          highestStep: this.xHighestCompleteStep[j - 1],
+        },
+        stepAfter: {
+          startValue: this.xVal[j],
+          step: this.xNumSteps[j],
+          highestStep: this.xHighestCompleteStep[j],
+        },
+      };
+    };
+    Spectrum.prototype.countStepDecimals = function () {
+      const stepDecimals = this.xNumSteps.map(countDecimals);
+      return Math.max.apply(null, stepDecimals);
+    };
+    Spectrum.prototype.hasNoSize = function () {
+      return this.xVal[0] === this.xVal[this.xVal.length - 1];
+    };
+    // Outside testing
+    Spectrum.prototype.convert = function (value) {
+      return this.getStep(this.toStepping(value));
+    };
+    Spectrum.prototype.handleEntryPoint = function (index, value) {
+      let percentage;
+      // Covert min/max syntax to 0 and 100.
+      if (index === 'min') {
+        percentage = 0;
+      }
+      else if (index === 'max') {
+        percentage = 100;
+      }
+      else {
+        percentage = parseFloat(index);
+      }
+      // Check for correct input.
+      if (!isNumeric(percentage) || !isNumeric(value[0])) {
+        throw new Error('noUiSlider: \'range\' value isn\'t numeric.');
+      }
+      // Store values.
+      this.xPct.push(percentage);
+      this.xVal.push(value[0]);
+      const value1 = Number(value[1]);
+      // NaN will evaluate to false too, but to keep
+      // logging clear, set step explicitly. Make sure
+      // not to override the 'step' setting with false.
+      if (!percentage) {
+        if (!isNaN(value1)) {
+          this.xSteps[0] = value1;
+        }
+      }
+      else {
+        this.xSteps.push(isNaN(value1) ? false : value1);
+      }
+      this.xHighestCompleteStep.push(0);
+    };
+    Spectrum.prototype.handleStepPoint = function (i, n) {
+      // Ignore 'false' stepping.
+      if (!n) {
+        return;
+      }
+      // Step over zero-length ranges (#948);
+      if (this.xVal[i] === this.xVal[i + 1]) {
+        this.xSteps[i] = this.xHighestCompleteStep[i] = this.xVal[i];
+        return;
+      }
+      // Factor to range ratio
+      this.xSteps[i] =
+                fromPercentage([this.xVal[i], this.xVal[i + 1]], n, 0) / subRangeRatio(this.xPct[i], this.xPct[i + 1]);
+      const totalSteps = (this.xVal[i + 1] - this.xVal[i]) / this.xNumSteps[i];
+      const highestStep = Math.ceil(Number(totalSteps.toFixed(3)) - 1);
+      const step = this.xVal[i] + this.xNumSteps[i] * highestStep;
+      this.xHighestCompleteStep[i] = step;
+    };
     return Spectrum;
   }());
-  //endregion
-  //region Options
-  /*	Every input option is tested and parsed. This will prevent
-      endless validation in internal methods. These tests are
-      structured with an item for every option available. An
-      option can be marked as required by setting the 'r' flag.
-      The testing function is provided with three arguments:
-          - The provided value for the option;
-          - A reference to the options object;
-          - The name for the option;
+    //endregion
+    //region Options
+    /*	Every input option is tested and parsed. This will prevent
+        endless validation in internal methods. These tests are
+        structured with an item for every option available. An
+        option can be marked as required by setting the 'r' flag.
+        The testing function is provided with three arguments:
+            - The provided value for the option;
+            - A reference to the options object;
+            - The name for the option;
 
-      The testing function returns false when an error is detected,
-      or true when everything is OK. It can also modify the option
-      object, to make sure all values can be correctly looped elsewhere. */
+        The testing function returns false when an error is detected,
+        or true when everything is OK. It can also modify the option
+        object, to make sure all values can be correctly looped elsewhere. */
   //region Defaults
   const defaultFormatter = {
     to: function (value) {
@@ -573,12 +519,12 @@
     valueLarge: 'value-large',
     valueSub: 'value-sub',
   };
-  // Namespaces of internal event listeners
+    // Namespaces of internal event listeners
   const INTERNAL_EVENT_NS = {
     tooltips: '.__tooltips',
     aria: '.__aria',
   };
-  //endregion
+    //endregion
   function testStep(parsed, entry) {
     if (!isNumeric(entry)) {
       throw new Error('noUiSlider: \'step\' is not numeric.');
@@ -873,7 +819,7 @@
       ariaFormat: defaultFormatter,
       format: defaultFormatter,
     };
-      // Tests are executed in the order they are presented here.
+    // Tests are executed in the order they are presented here.
     const tests = {
       step: { r: false, t: testStep },
       keyboardPageMultiplier: { r: false, t: testKeyboardPageMultiplier },
@@ -912,7 +858,7 @@
       keyboardMultiplier: 1,
       keyboardDefaultStep: 10,
     };
-      // AriaFormat defaults to regular format, if any.
+    // AriaFormat defaults to regular format, if any.
     if (options.format && !options.ariaFormat) {
       options.ariaFormat = options.format;
     }
@@ -938,7 +884,6 @@
     const d = document.createElement('div');
     const msPrefix = d.style.msTransform !== undefined;
     const noPrefix = d.style.transform !== undefined;
-    // eslint-disable-next-line no-nested-ternary
     parsed.transformRule = noPrefix ? 'transform' : msPrefix ? 'msTransform' : 'webkitTransform';
     // Pips don't move, so we can place them using left/top.
     const styles = [
@@ -955,41 +900,28 @@
     const supportsPassive = supportsTouchActionNone && getSupportsPassive();
     // All variables local to 'scope' are prefixed with 'scope_'
     // Slider DOM Nodes
-    // eslint-disable-next-line camelcase
     const scope_Target = target;
-    // eslint-disable-next-line camelcase
     let scope_Base;
-    // eslint-disable-next-line camelcase
     let scope_Handles;
-    // eslint-disable-next-line camelcase
     let scope_Connects;
-    // eslint-disable-next-line camelcase
     let scope_Pips;
-    // eslint-disable-next-line camelcase
     let scope_Tooltips;
     // Slider state values
-    // eslint-disable-next-line camelcase
     let scope_Spectrum = options.spectrum;
-    // eslint-disable-next-line camelcase
     const scope_Values = [];
-    // eslint-disable-next-line camelcase
     let scope_Locations = [];
-    // eslint-disable-next-line camelcase
+    const scope_HandleNumbers = [];
     let scope_ActiveHandlesCount = 0;
+    const scope_Events = {};
     // Document Nodes
-    // eslint-disable-next-line camelcase
     const scope_Document = target.ownerDocument;
-    // eslint-disable-next-line camelcase
     const scope_DocumentElement = options.documentElement || scope_Document.documentElement;
-    // eslint-disable-next-line camelcase
     const scope_Body = scope_Document.body;
     // For horizontal sliders in standard ltr documents,
     // make .noUi-origin overflow to the left so the document doesn't scroll.
-    // eslint-disable-next-line camelcase
     const scope_DirOffset = scope_Document.dir === 'rtl' || options.ort === 1 ? 0 : 100;
     // Creates a node, adds it to target, returns the new node.
     function addNodeTo(addTarget, className) {
-      // eslint-disable-next-line camelcase
       const div = scope_Document.createElement('div');
       if (className) {
         addClass(div, className);
@@ -1010,10 +942,8 @@
         handle.addEventListener('keydown', (event) => eventKeydown(event, handleNumber));
       }
       if (options.handleAttributes !== undefined) {
-        // eslint-disable-next-line camelcase
         const attributes_1 = options.handleAttributes[handleNumber];
         Object.keys(attributes_1).forEach((attribute) => {
-          // eslint-disable-next-line camelcase
           handle.setAttribute(attribute, attributes_1[attribute]);
         });
       }
@@ -1025,6 +955,7 @@
       else if (handleNumber === options.handles - 1) {
         addClass(handle, options.cssClasses.handleUpper);
       }
+      origin.handle = handle;
       return origin;
     }
     // Insert nodes for connect elements
@@ -1037,20 +968,15 @@
     // Add handles to the slider base.
     function addElements(connectOptions, base) {
       const connectBase = addNodeTo(base, options.cssClasses.connects);
-      // eslint-disable-next-line camelcase
       scope_Handles = [];
-      // eslint-disable-next-line camelcase
       scope_Connects = [];
-      // eslint-disable-next-line camelcase
       scope_Connects.push(addConnect(connectBase, connectOptions[0]));
       // [::::O====O====O====]
       // connectOptions = [0, 1, 1, 1]
       for (let i = 0; i < options.handles; i++) {
         // Keep a list of all added handles.
-        // eslint-disable-next-line camelcase
         scope_Handles.push(addOrigin(base, i));
-        [][i] = i;
-        // eslint-disable-next-line camelcase
+        scope_HandleNumbers[i] = i;
         scope_Connects.push(addConnect(connectBase, connectOptions[i + 1]));
       }
     }
@@ -1086,26 +1012,46 @@
       return addNodeTo(handle.firstChild, options.cssClasses.tooltip);
     }
     function isSliderDisabled() {
-      // eslint-disable-next-line camelcase
       return scope_Target.hasAttribute('disabled');
     }
     // Disable the slider dragging if any handle is disabled
     function isHandleDisabled(handleNumber) {
-      // eslint-disable-next-line camelcase
       const handleOrigin = scope_Handles[handleNumber];
       return handleOrigin.hasAttribute('disabled');
     }
+    function disable(handleNumber) {
+      if (handleNumber !== null && handleNumber !== undefined) {
+        scope_Handles[handleNumber].setAttribute('disabled', '');
+        scope_Handles[handleNumber].handle.removeAttribute('tabindex');
+      }
+      else {
+        scope_Target.setAttribute('disabled', '');
+        scope_Handles.forEach((handle) => {
+          handle.handle.removeAttribute('tabindex');
+        });
+      }
+    }
+    function enable(handleNumber) {
+      if (handleNumber !== null && handleNumber !== undefined) {
+        scope_Handles[handleNumber].removeAttribute('disabled');
+        scope_Handles[handleNumber].handle.setAttribute('tabindex', '0');
+      }
+      else {
+        scope_Target.removeAttribute('disabled');
+        scope_Handles.forEach((handle) => {
+          handle.removeAttribute('disabled');
+          handle.handle.setAttribute('tabindex', '0');
+        });
+      }
+    }
     function removeTooltips() {
-      // eslint-disable-next-line camelcase
       if (scope_Tooltips) {
         removeEvent(`update${  INTERNAL_EVENT_NS.tooltips}`);
-        // eslint-disable-next-line camelcase
         scope_Tooltips.forEach((tooltip) => {
           if (tooltip) {
             removeElement(tooltip);
           }
         });
-        // eslint-disable-next-line camelcase
         scope_Tooltips = null;
       }
     }
@@ -1113,14 +1059,11 @@
     function tooltips() {
       removeTooltips();
       // Tooltips are added with options.tooltips in original order.
-      // eslint-disable-next-line camelcase
       scope_Tooltips = scope_Handles.map(addTooltip);
       bindEvent(`update${  INTERNAL_EVENT_NS.tooltips}`, (values, handleNumber, unencoded) => {
-        // eslint-disable-next-line camelcase
         if (!scope_Tooltips || !options.tooltips) {
           return;
         }
-        // eslint-disable-next-line camelcase
         if (scope_Tooltips[handleNumber] === false) {
           return;
         }
@@ -1128,16 +1071,14 @@
         if (options.tooltips[handleNumber] !== true) {
           formattedValue = options.tooltips[handleNumber].to(unencoded[handleNumber]);
         }
-        // eslint-disable-next-line camelcase
         scope_Tooltips[handleNumber].innerHTML = formattedValue;
       });
     }
     function aria() {
       removeEvent(`update${  INTERNAL_EVENT_NS.aria}`);
-      bindEvent(`update${  INTERNAL_EVENT_NS.aria}`, (_values, _handleNumber, unencoded, _tap, positions) => {
+      bindEvent(`update${  INTERNAL_EVENT_NS.aria}`, (values, handleNumber, unencoded, tap, positions) => {
         // Update Aria Values for all handles, as a change in one changes min and max values for the next.
-        [].forEach((index) => {
-          // eslint-disable-next-line camelcase
+        scope_HandleNumbers.forEach((index) => {
           const handle = scope_Handles[index];
           let min = checkHandlePosition(scope_Locations, index, 0, true, true, true);
           let max = checkHandlePosition(scope_Locations, index, 100, true, true, true);
@@ -1145,11 +1086,8 @@
           // Formatted value for display
           const text = String(options.ariaFormat.to(unencoded[index]));
           // Map to slider range values
-          // eslint-disable-next-line camelcase
           min = scope_Spectrum.fromStepping(min).toFixed(1);
-          // eslint-disable-next-line camelcase
           max = scope_Spectrum.fromStepping(max).toFixed(1);
-          // eslint-disable-next-line camelcase
           now = scope_Spectrum.fromStepping(now).toFixed(1);
           handle.children[0].setAttribute('aria-valuemin', min);
           handle.children[0].setAttribute('aria-valuemax', max);
@@ -1158,11 +1096,9 @@
         });
       });
     }
-    // eslint-disable-next-line no-shadow
     function getGroup(pips) {
       // Use the range.
       if (pips.mode === exports.PipsMode.Range || pips.mode === exports.PipsMode.Steps) {
-        // eslint-disable-next-line camelcase
         return scope_Spectrum.xVal;
       }
       if (pips.mode === exports.PipsMode.Count) {
@@ -1189,7 +1125,6 @@
         if (pips.stepped) {
           return pips.values.map((value) =>
             // Convert to percentage, apply step, return to value.
-            // eslint-disable-next-line camelcase
             scope_Spectrum.fromStepping(scope_Spectrum.getStep(scope_Spectrum.toStepping(value)))
           );
         }
@@ -1199,10 +1134,8 @@
       return []; // pips.mode = never
     }
     function mapToRange(values, stepped) {
-      // eslint-disable-next-line camelcase
       return values.map((value) => scope_Spectrum.fromStepping(stepped ? scope_Spectrum.getStep(value) : value));
     }
-    // eslint-disable-next-line no-shadow
     function generateSpread(pips) {
       function safeIncrement(value, increment) {
         // Avoid floating point variance by dropping the smallest decimal places.
@@ -1210,9 +1143,7 @@
       }
       let group = getGroup(pips);
       const indexes = {};
-      // eslint-disable-next-line camelcase
       const firstInRange = scope_Spectrum.xVal[0];
-      // eslint-disable-next-line camelcase
       const lastInRange = scope_Spectrum.xVal[scope_Spectrum.xVal.length - 1];
       let ignoreFirst = false;
       let ignoreLast = false;
@@ -1247,7 +1178,6 @@
         // When using 'steps' mode, use the provided steps.
         // Otherwise, we'll step on to the next subrange.
         if (isSteps) {
-          // eslint-disable-next-line camelcase
           step = scope_Spectrum.xNumSteps[index];
         }
         // Default to a 'full' step.
@@ -1264,7 +1194,6 @@
         for (i = low; i <= high; i = safeIncrement(i, step)) {
           // Get the percentage value for the current step,
           // calculate the size for the subrange.
-          // eslint-disable-next-line camelcase
           newPct = scope_Spectrum.toStepping(i);
           pctDifference = newPct - prevPct;
           steps = pctDifference / (pips.density || 1);
@@ -1282,11 +1211,9 @@
             // per subrange. density = 1 will result in 100 points on the
             // full range, 2 for 50, 4 for 25, etc.
             pctPos = prevPct + q * stepSize;
-            // eslint-disable-next-line camelcase
             indexes[pctPos.toFixed(5)] = [scope_Spectrum.fromStepping(pctPos), 0];
           }
           // Determine the point type.
-          // eslint-disable-next-line no-nested-ternary
           type = group.indexOf(i) > -1 ? exports.PipsType.LargeValue : isSteps ? exports.PipsType.SmallValue : exports.PipsType.NoValue;
           // Enforce the 'ignoreFirst' option by overwriting the type for 0.
           if (!index && ignoreFirst && i !== high) {
@@ -1304,7 +1231,6 @@
     }
     function addMarking(spread, filterFunc, formatter) {
       let _a, _b;
-      // eslint-disable-next-line camelcase
       const element = scope_Document.createElement('div');
       const valueSizeClasses = (_a = {},
       _a[exports.PipsType.None] = '',
@@ -1328,7 +1254,6 @@
         const sizeClasses = a ? valueSizeClasses : markerSizeClasses;
         return `${source  } ${  orientationClasses[options.ort]  } ${  sizeClasses[type]}`;
       }
-      // eslint-disable-next-line no-shadow
       function addSpread(offset, value, type) {
         // Apply the filter function, if it is set.
         type = filterFunc ? filterFunc(value, type) : type;
@@ -1349,21 +1274,17 @@
         }
       }
       // Append all points.
-      // eslint-disable-next-line no-shadow
       Object.keys(spread).forEach((offset) => {
         addSpread(offset, spread[offset][0], spread[offset][1]);
       });
       return element;
     }
     function removePips() {
-      // eslint-disable-next-line camelcase
       if (scope_Pips) {
         removeElement(scope_Pips);
-        // eslint-disable-next-line camelcase
         scope_Pips = null;
       }
     }
-    // eslint-disable-next-line no-shadow
     function pips(pips) {
       // Fix #669
       removePips();
@@ -1374,17 +1295,13 @@
           return String(Math.round(value));
         },
       };
-      // eslint-disable-next-line camelcase
       scope_Pips = scope_Target.appendChild(addMarking(spread, filter, format));
-      // eslint-disable-next-line camelcase
       return scope_Pips;
     }
     // Shorthand for base dimensions.
     function baseSize() {
-      // eslint-disable-next-line camelcase
       const rect = scope_Base.getBoundingClientRect();
       const alt = (`offset${  ['Width', 'Height'][options.ort]}`);
-      // eslint-disable-next-line camelcase
       return options.ort === 0 ? rect.width || scope_Base[alt] : rect.height || scope_Base[alt];
     }
     // Handler for attaching events trough a proxy.
@@ -1460,11 +1377,10 @@
       if (touch) {
         // Returns true if a touch originated on the target.
         const isTouchOnTarget = function (checkTouch) {
-          // eslint-disable-next-line no-shadow
           const target = checkTouch.target;
           return (target === eventTarget ||
-                      eventTarget.contains(target) ||
-                      (e.composed && e.composedPath().shift() === eventTarget));
+                        eventTarget.contains(target) ||
+                        (e.composed && e.composedPath().shift() === eventTarget));
         };
         // In the case of touchstart events, we need to make sure there is still no more than one
         // touch on the target so we look amongst all touches.
@@ -1512,13 +1428,11 @@
     function getClosestHandle(clickedPosition) {
       let smallestDifference = 100;
       let handleNumber = false;
-      // eslint-disable-next-line camelcase
-      scope_Handles.forEach((_handle, index) => {
+      scope_Handles.forEach((handle, index) => {
         // Disabled handles are ignored
         if (isHandleDisabled(index)) {
           return;
         }
-        // eslint-disable-next-line camelcase
         const handlePosition = scope_Locations[index];
         const differenceWithThisHandle = Math.abs(handlePosition - clickedPosition);
         // Initial state
@@ -1536,8 +1450,8 @@
     // Fire 'end' when a mouse or pen leaves the document.
     function documentLeave(event, data) {
       if (event.type === 'mouseout' &&
-              event.target.nodeName === 'HTML' &&
-              event.relatedTarget === null) {
+                event.target.nodeName === 'HTML' &&
+                event.relatedTarget === null) {
         eventEnd(event, data);
       }
     }
@@ -1562,30 +1476,24 @@
       // The handle is no longer active, so remove the class.
       if (data.handle) {
         removeClass(data.handle, options.cssClasses.active);
-        // eslint-disable-next-line camelcase
         scope_ActiveHandlesCount -= 1;
       }
       // Unbind the move and end events, which are added on 'start'.
       data.listeners.forEach((c) => {
-        // eslint-disable-next-line camelcase
         scope_DocumentElement.removeEventListener(c[0], c[1]);
       });
-      // eslint-disable-next-line camelcase
       if (scope_ActiveHandlesCount === 0) {
         // Remove dragging class.
         removeClass(scope_Target, options.cssClasses.drag);
         setZindex();
         // Remove cursor styles and text-selection events bound to the body.
         if (event.cursor) {
-          // eslint-disable-next-line camelcase
           scope_Body.style.cursor = '';
-          // eslint-disable-next-line camelcase
           scope_Body.removeEventListener('selectstart', preventDefault);
         }
       }
       if (options.events.smoothSteps) {
         data.handleNumbers.forEach((handleNumber) => {
-          // eslint-disable-next-line camelcase
           setHandle(handleNumber, scope_Locations[handleNumber], true, true, false, false);
         });
         data.handleNumbers.forEach((handleNumber) => {
@@ -1606,10 +1514,8 @@
       }
       let handle;
       if (data.handleNumbers.length === 1) {
-        // eslint-disable-next-line camelcase
         const handleOrigin = scope_Handles[data.handleNumbers[0]];
         handle = handleOrigin.children[0];
-        // eslint-disable-next-line camelcase
         scope_ActiveHandlesCount += 1;
         // Mark the handle as 'active' so it can be styled.
         addClass(handle, options.cssClasses.active);
@@ -1631,7 +1537,6 @@
         pageOffset: event.pageOffset,
         handleNumbers: data.handleNumbers,
         buttonsProperty: event.buttons,
-        // eslint-disable-next-line camelcase
         locations: scope_Locations.slice(),
       });
       const endEvent = attachEvent(actions.end, scope_DocumentElement, eventEnd, {
@@ -1655,10 +1560,8 @@
       // so adding cursor styles can be skipped.
       if (event.cursor) {
         // Prevent the 'I' cursor and extend the range-drag cursor.
-        // eslint-disable-next-line camelcase
         scope_Body.style.cursor = getComputedStyle(event.target).cursor;
         // Mark the target with a dragging state.
-        // eslint-disable-next-line camelcase
         if (scope_Handles.length > 1) {
           addClass(scope_Target, options.cssClasses.drag);
         }
@@ -1668,7 +1571,6 @@
         // meaning the only holdout is iOS Safari. This doesn't matter: text selection isn't triggered there.
         // The 'cursor' flag is false.
         // See: http://caniuse.com/#search=selectstart
-        // eslint-disable-next-line camelcase
         scope_Body.addEventListener('selectstart', preventDefault, false);
       }
       data.handleNumbers.forEach((handleNumber) => {
@@ -1705,15 +1607,11 @@
     // Fires a 'hover' event for a hovered mouse/pen position.
     function eventHover(event) {
       const proposal = calcPointToPercentage(event.calcPoint);
-      // eslint-disable-next-line camelcase
       const to = scope_Spectrum.getStep(proposal);
-      // eslint-disable-next-line camelcase
       const value = scope_Spectrum.fromStepping(to);
-      Object.keys({}).forEach((targetEvent) => {
+      Object.keys(scope_Events).forEach((targetEvent) => {
         if ('hover' === targetEvent.split('.')[0]) {
-          // eslint-disable-next-line no-empty
-          {}[targetEvent].forEach((callback) => {
-            // eslint-disable-next-line no-use-before-define
+          scope_Events[targetEvent].forEach((callback) => {
             callback.call(scope_Self, value);
           });
         }
@@ -1761,7 +1659,6 @@
         }
         // No step set, use the default of 10% of the sub-range
         if (step === false) {
-          // eslint-disable-next-line camelcase
           step = scope_Spectrum.getDefaultStep(scope_Locations[handleNumber], isDown, options.keyboardDefaultStep);
         }
         if (isLargeUp || isLargeDown) {
@@ -1774,7 +1671,6 @@
         step = Math.max(step, 0.0000001);
         // Decrement for down steps
         step = (isDown ? -1 : 1) * step;
-        // eslint-disable-next-line camelcase
         to = scope_Values[handleNumber] + step;
       }
       else if (isMax) {
@@ -1785,7 +1681,6 @@
         // Home key
         to = options.spectrum.xVal[0];
       }
-      // eslint-disable-next-line camelcase
       setHandle(handleNumber, scope_Spectrum.toStepping(to), true, true);
       fireEvent('slide', handleNumber);
       fireEvent('update', handleNumber);
@@ -1797,7 +1692,6 @@
     function bindSliderEvents(behaviour) {
       // Attach the standard drag event to the handles.
       if (!behaviour.fixed) {
-        // eslint-disable-next-line camelcase
         scope_Handles.forEach((handle, index) => {
           // These events are only bound to the visual handle
           // element, not the 'real' origin element.
@@ -1818,15 +1712,11 @@
       }
       // Make the range draggable.
       if (behaviour.drag) {
-        // eslint-disable-next-line camelcase
         scope_Connects.forEach((connect, index) => {
-          // eslint-disable-next-line camelcase
           if (connect === false || index === 0 || index === scope_Connects.length - 1) {
             return;
           }
-          // eslint-disable-next-line camelcase
           const handleBefore = scope_Handles[index - 1];
-          // eslint-disable-next-line camelcase
           const handleAfter = scope_Handles[index];
           const eventHolders = [connect];
           let handlesToDrag = [handleBefore, handleAfter];
@@ -1841,9 +1731,8 @@
             eventHolders.push(handleAfter.children[0]);
           }
           if (behaviour.dragAll) {
-            // eslint-disable-next-line camelcase
             handlesToDrag = scope_Handles;
-            handleNumbersToDrag = [];
+            handleNumbersToDrag = scope_HandleNumbers;
           }
           eventHolders.forEach((eventHolder) => {
             attachEvent(actions.start, eventHolder, eventStart, {
@@ -1857,14 +1746,11 @@
     }
     // Attach an event to this slider, possibly including a namespace
     function bindEvent(namespacedEvent, callback) {
-      // eslint-disable-next-line no-empty
-      {}[namespacedEvent] = {}[namespacedEvent] || [];
-      // eslint-disable-next-line no-empty
-      {}[namespacedEvent].push(callback);
+      scope_Events[namespacedEvent] = scope_Events[namespacedEvent] || [];
+      scope_Events[namespacedEvent].push(callback);
       // If the event bound is 'update,' fire it immediately for all handles.
       if (namespacedEvent.split('.')[0] === 'update') {
-        // eslint-disable-next-line camelcase
-        scope_Handles.forEach((_a, index) => {
+        scope_Handles.forEach((a, index) => {
           fireEvent('update', index);
         });
       }
@@ -1876,43 +1762,37 @@
     function removeEvent(namespacedEvent) {
       const event = namespacedEvent && namespacedEvent.split('.')[0];
       const namespace = event ? namespacedEvent.substring(event.length) : namespacedEvent;
-      Object.keys({}).forEach((bind) => {
+      Object.keys(scope_Events).forEach((bind) => {
         const tEvent = bind.split('.')[0];
         const tNamespace = bind.substring(tEvent.length);
         if ((!event || event === tEvent) && (!namespace || namespace === tNamespace)) {
           // only delete protected internal event if intentional
           if (!isInternalNamespace(tNamespace) || namespace === tNamespace) {
-            delete {}[bind];
+            delete scope_Events[bind];
           }
         }
       });
     }
     // External event handling
     function fireEvent(eventName, handleNumber, tap) {
-      Object.keys({}).forEach((targetEvent) => {
+      Object.keys(scope_Events).forEach((targetEvent) => {
         const eventType = targetEvent.split('.')[0];
         if (eventName === eventType) {
-          // eslint-disable-next-line no-empty
-          {}[targetEvent].forEach((callback) => {
+          scope_Events[targetEvent].forEach((callback) => {
             callback.call(
               // Use the slider public API as the scope ('this')
-              // eslint-disable-next-line no-use-before-define
               scope_Self,
               // Return values as array, so arg_1[arg_2] is always valid.
-              // eslint-disable-next-line camelcase
               scope_Values.map(options.format.to),
               // Handle index, 0 or 1
               handleNumber,
               // Un-formatted slider values
-              // eslint-disable-next-line camelcase
               scope_Values.slice(),
               // Event is fired by tap, true or false
               tap || false,
               // Left offset of the handle, in relation to the slider
-              // eslint-disable-next-line camelcase
               scope_Locations.slice(),
               // add the slider public API to an accessible parameter when this is unavailable
-              // eslint-disable-next-line no-use-before-define
               scope_Self);
           });
         }
@@ -1923,16 +1803,12 @@
       let distance;
       // For sliders with multiple handles, limit movement to the other handle.
       // Apply the margin option by adding it to the handle positions.
-      // eslint-disable-next-line camelcase
       if (scope_Handles.length > 1 && !options.events.unconstrained) {
         if (lookBackward && handleNumber > 0) {
-          // eslint-disable-next-line camelcase
           distance = scope_Spectrum.getAbsoluteDistance(reference[handleNumber - 1], options.margin, false);
           to = Math.max(to, distance);
         }
-        // eslint-disable-next-line camelcase
         if (lookForward && handleNumber < scope_Handles.length - 1) {
-          // eslint-disable-next-line camelcase
           distance = scope_Spectrum.getAbsoluteDistance(reference[handleNumber + 1], options.margin, true);
           to = Math.min(to, distance);
         }
@@ -1940,16 +1816,12 @@
       // The limit option has the opposite effect, limiting handles to a
       // maximum distance from another. Limit must be > 0, as otherwise
       // handles would be unmovable.
-      // eslint-disable-next-line camelcase
       if (scope_Handles.length > 1 && options.limit) {
         if (lookBackward && handleNumber > 0) {
-          // eslint-disable-next-line camelcase
           distance = scope_Spectrum.getAbsoluteDistance(reference[handleNumber - 1], options.limit, false);
           to = Math.min(to, distance);
         }
-        // eslint-disable-next-line camelcase
         if (lookForward && handleNumber < scope_Handles.length - 1) {
-          // eslint-disable-next-line camelcase
           distance = scope_Spectrum.getAbsoluteDistance(reference[handleNumber + 1], options.limit, true);
           to = Math.max(to, distance);
         }
@@ -1958,19 +1830,15 @@
       // edges of the slider. Padding must be > 0.
       if (options.padding) {
         if (handleNumber === 0) {
-          // eslint-disable-next-line camelcase
           distance = scope_Spectrum.getAbsoluteDistance(0, options.padding[0], false);
           to = Math.max(to, distance);
         }
-        // eslint-disable-next-line camelcase
         if (handleNumber === scope_Handles.length - 1) {
-          // eslint-disable-next-line camelcase
           distance = scope_Spectrum.getAbsoluteDistance(100, options.padding[1], true);
           to = Math.min(to, distance);
         }
       }
       if (!smoothSteps) {
-        // eslint-disable-next-line camelcase
         to = scope_Spectrum.getStep(to);
       }
       // Limit percentage to the 0 - 100 range
@@ -2024,7 +1892,7 @@
       // Step 2: Try to set the handles with the found percentage
       handleNumbers.forEach((handleNumber, o) => {
         state =
-                  setHandle(handleNumber, locations[handleNumber] + proposal, b[o], f[o], false, smoothSteps) || state;
+                    setHandle(handleNumber, locations[handleNumber] + proposal, b[o], f[o], false, smoothSteps) || state;
       });
       // Step 3: If a handle moved, fire events
       if (state) {
@@ -2033,8 +1901,7 @@
           fireEvent('slide', handleNumber);
         });
         // If target is a connect, then fire drag event
-        // eslint-disable-next-line eqeqeq
-        if (connect !== undefined) {
+        if (connect != undefined) {
           fireEvent('drag', firstHandle);
         }
       }
@@ -2049,15 +1916,11 @@
     // Updates scope_Locations and scope_Values, updates visual state
     function updateHandlePosition(handleNumber, to) {
       // Update locations.
-      // eslint-disable-next-line camelcase
       scope_Locations[handleNumber] = to;
       // Convert the value to the slider stepping/range.
-      // eslint-disable-next-line camelcase
       scope_Values[handleNumber] = scope_Spectrum.fromStepping(to);
-      // eslint-disable-next-line camelcase
       const translation = transformDirection(to, 0) - scope_DirOffset;
       const translateRule = `translate(${  inRuleOrder(`${translation  }%`, '0')  })`;
-      // eslint-disable-next-line camelcase
       scope_Handles[handleNumber].style[options.transformRule] = translateRule;
       updateConnect(handleNumber);
       updateConnect(handleNumber + 1);
@@ -2066,12 +1929,9 @@
     // Handles after the middle later is lower
     // [[7] [8] .......... | .......... [5] [4]
     function setZindex() {
-      [].forEach((handleNumber) => {
-        // eslint-disable-next-line camelcase
+      scope_HandleNumbers.forEach((handleNumber) => {
         const dir = scope_Locations[handleNumber] > 50 ? -1 : 1;
-        // eslint-disable-next-line camelcase
         const zIndex = 3 + (scope_Handles.length + dir * handleNumber);
-        // eslint-disable-next-line camelcase
         scope_Handles[handleNumber].style.zIndex = String(zIndex);
       });
     }
@@ -2090,19 +1950,15 @@
     // Updates style attribute for connect nodes
     function updateConnect(index) {
       // Skip connects set to false
-      // eslint-disable-next-line camelcase
       if (!scope_Connects[index]) {
         return;
       }
       let l = 0;
       let h = 100;
       if (index !== 0) {
-        // eslint-disable-next-line camelcase
         l = scope_Locations[index - 1];
       }
-      // eslint-disable-next-line camelcase
       if (index !== scope_Connects.length - 1) {
-        // eslint-disable-next-line camelcase
         h = scope_Locations[index];
       }
       // We use two rules:
@@ -2112,16 +1968,14 @@
       const connectWidth = h - l;
       const translateRule = `translate(${  inRuleOrder(`${transformDirection(l, connectWidth)  }%`, '0')  })`;
       const scaleRule = `scale(${  inRuleOrder(connectWidth / 100, '1')  })`;
-      // eslint-disable-next-line camelcase
       scope_Connects[index].style[options.transformRule] =
-              `${translateRule  } ${  scaleRule}`;
+                `${translateRule  } ${  scaleRule}`;
     }
     // Parses value passed to .set method. Returns current value if not parse-able.
     function resolveToValue(to, handleNumber) {
       // Setting with null indicates an 'ignore'.
       // Inputting 'false' is invalid.
       if (to === null || to === false || to === undefined) {
-        // eslint-disable-next-line camelcase
         return scope_Locations[handleNumber];
       }
       // If a formatted number was passed, attempt to decode it.
@@ -2130,12 +1984,10 @@
       }
       to = options.format.from(to);
       if (to !== false) {
-        // eslint-disable-next-line camelcase
         to = scope_Spectrum.toStepping(to);
       }
       // If parsing the number failed, use the current value.
       if (to === false || isNaN(to)) {
-        // eslint-disable-next-line camelcase
         return scope_Locations[handleNumber];
       }
       return to;
@@ -2143,7 +1995,6 @@
     // Set the slider value.
     function valueSet(input, fireSetEvent, exactInput) {
       const values = asArray(input);
-      // eslint-disable-next-line camelcase
       const isInit = scope_Locations[0] === undefined;
       // Event fires by default
       fireSetEvent = fireSetEvent === undefined ? true : fireSetEvent;
@@ -2153,35 +2004,30 @@
         addClassFor(scope_Target, options.cssClasses.tap, options.animationDuration);
       }
       // First pass, without lookAhead but with lookBackward. Values are set from left to right.
-      [].forEach((handleNumber) => {
+      scope_HandleNumbers.forEach((handleNumber) => {
         setHandle(handleNumber, resolveToValue(values[handleNumber], handleNumber), true, false, exactInput);
       });
-      let i = [].length === 1 ? 0 : 1;
+      let i = scope_HandleNumbers.length === 1 ? 0 : 1;
       // Spread handles evenly across the slider if the range has no size (min=max)
-      // eslint-disable-next-line camelcase
       if (isInit && scope_Spectrum.hasNoSize()) {
         exactInput = true;
-        // eslint-disable-next-line camelcase
         scope_Locations[0] = 0;
-        if ([].length > 1) {
-          // eslint-disable-next-line camelcase
-          const space_1 = 100 / ([].length - 1);
-          [].forEach((handleNumber) => {
-            // eslint-disable-next-line camelcase
+        if (scope_HandleNumbers.length > 1) {
+          const space_1 = 100 / (scope_HandleNumbers.length - 1);
+          scope_HandleNumbers.forEach((handleNumber) => {
             scope_Locations[handleNumber] = handleNumber * space_1;
           });
         }
       }
       // Secondary passes. Now that all base values are set, apply constraints.
       // Iterate all handles to ensure constraints are applied for the entire slider (Issue #1009)
-      for (; i < [].length; ++i) {
-        [].forEach((handleNumber) => {
-          // eslint-disable-next-line camelcase
+      for (; i < scope_HandleNumbers.length; ++i) {
+        scope_HandleNumbers.forEach((handleNumber) => {
           setHandle(handleNumber, scope_Locations[handleNumber], true, true, exactInput);
         });
       }
       setZindex();
-      [].forEach((handleNumber) => {
+      scope_HandleNumbers.forEach((handleNumber) => {
         fireEvent('update', handleNumber);
         // Fire the event only for handles that received a new value, as per #579
         if (values[handleNumber] !== null && fireSetEvent) {
@@ -2197,7 +2043,7 @@
     function valueSetHandle(handleNumber, value, fireSetEvent, exactInput) {
       // Ensure numeric input
       handleNumber = Number(handleNumber);
-      if (!(handleNumber >= 0 && handleNumber < [].length)) {
+      if (!(handleNumber >= 0 && handleNumber < scope_HandleNumbers.length)) {
         throw new Error(`noUiSlider: invalid handle number, got: ${  handleNumber}`);
       }
       // Look both backward and forward, since we don't want this handle to "push" other handles (#960);
@@ -2213,10 +2059,8 @@
       if (unencoded === void 0) { unencoded = false; }
       if (unencoded) {
         // return a copy of the raw values
-        // eslint-disable-next-line camelcase
         return scope_Values.length === 1 ? scope_Values[0] : scope_Values.slice(0);
       }
-      // eslint-disable-next-line camelcase
       const values = scope_Values.map(options.format.to);
       // If only one handle is used, return a single value.
       if (values.length === 1) {
@@ -2232,20 +2076,14 @@
       Object.keys(options.cssClasses).forEach((key) => {
         removeClass(scope_Target, options.cssClasses[key]);
       });
-      // eslint-disable-next-line camelcase
       while (scope_Target.firstChild) {
-        // eslint-disable-next-line camelcase
         scope_Target.removeChild(scope_Target.firstChild);
       }
-      // eslint-disable-next-line camelcase
       delete scope_Target.noUiSlider;
     }
     function getNextStepsForHandle(handleNumber) {
-      // eslint-disable-next-line camelcase
       const location = scope_Locations[handleNumber];
-      // eslint-disable-next-line camelcase
       const nearbySteps = scope_Spectrum.getNearbySteps(location);
-      // eslint-disable-next-line camelcase
       const value = scope_Values[handleNumber];
       let increment = nearbySteps.thisStep.step;
       let decrement = null;
@@ -2282,7 +2120,6 @@
         decrement = null;
       }
       // As per #391, the comparison for the decrement step can have some rounding issues.
-      // eslint-disable-next-line camelcase
       const stepDecimals = scope_Spectrum.countStepDecimals();
       // Round per #391
       if (increment !== null && increment !== false) {
@@ -2295,8 +2132,7 @@
     }
     // Get the current step size for the slider.
     function getNextSteps() {
-      // eslint-disable-next-line camelcase
-      return [].map(getNextStepsForHandle);
+      return scope_HandleNumbers.map(getNextStepsForHandle);
     }
     // Updatable: margin, limit, padding, step, range, animate, snap
     function updateOptions(optionsToUpdate, fireSetEvent) {
@@ -2330,7 +2166,6 @@
           options[name] = newOptions[name];
         }
       });
-      // eslint-disable-next-line camelcase
       scope_Spectrum = newOptions.spectrum;
       // Limit, margin and padding depend on the spectrum but are stored outside of it. (#677)
       options.margin = newOptions.margin;
@@ -2351,7 +2186,6 @@
         removeTooltips();
       }
       // Invalidate the current positioning so valueSet forces an update.
-      // eslint-disable-next-line camelcase
       scope_Locations = [];
       valueSet(isSet(optionsToUpdate.start) ? optionsToUpdate.start : v, fireSetEvent);
     }
@@ -2359,7 +2193,6 @@
     function setupSlider() {
       // Create the base element, initialize HTML and set classes.
       // Add handles and connect elements.
-      // eslint-disable-next-line camelcase
       scope_Base = addSlider(scope_Target);
       addElements(options.connect, scope_Base);
       // Attach user events.
@@ -2375,7 +2208,6 @@
       aria();
     }
     setupSlider();
-    // eslint-disable-next-line no-var, camelcase
     var scope_Self = {
       destroy: destroy,
       steps: getNextSteps,
@@ -2385,31 +2217,28 @@
       set: valueSet,
       setHandle: valueSetHandle,
       reset: valueReset,
+      disable: disable,
+      enable: enable,
       // Exposed for unit testing, don't use this in your application.
       __moveHandles: function (upward, proposal, handleNumbers) {
         moveHandles(upward, proposal, scope_Locations, handleNumbers);
       },
       options: originalOptions,
       updateOptions: updateOptions,
-      // eslint-disable-next-line camelcase
       target: scope_Target,
       removePips: removePips,
       removeTooltips: removeTooltips,
       getPositions: function () {
-        // eslint-disable-next-line camelcase
         return scope_Locations.slice();
       },
       getTooltips: function () {
-        // eslint-disable-next-line camelcase
         return scope_Tooltips;
       },
       getOrigins: function () {
-        // eslint-disable-next-line camelcase
         return scope_Handles;
       },
       pips: pips, // Issue #594
     };
-    // eslint-disable-next-line camelcase
     return scope_Self;
   }
   // Run the standard initializer
