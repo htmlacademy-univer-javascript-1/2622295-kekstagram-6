@@ -1,3 +1,6 @@
+import { sendData } from './api.js';
+import { showSuccessMessage, showErrorMessage } from './message.js';
+
 // Элементы формы
 const form = document.querySelector('.img-upload__form');
 const fileInput = document.querySelector('#upload-file');
@@ -161,18 +164,6 @@ const onDocumentKeydown = (evt) => {
   }
 };
 
-// Обработчик отправки формы
-const onFormSubmit = (evt) => {
-  const isValid = pristine.validate();
-
-  if (!isValid) {
-    evt.preventDefault();
-    const firstErrorElement = form.querySelector('.img-upload__field-wrapper--invalid input, .img-upload__field-wrapper--invalid textarea');
-    if (firstErrorElement) {
-      firstErrorElement.focus();
-    }
-  }
-};
 
 // Обработчик выбора файла
 const onFileInputChange = () => {
@@ -220,6 +211,41 @@ const onDescriptionInput = () => {
   }, 10);
 };
 
+const SubmitButtonText = {
+  IDLE: 'Опубликовать',
+  SENDING: 'Публикую...'
+};
+
+const blockSubmitButton = () => {
+  submitButton.disabled = true;
+  submitButton.textContent = SubmitButtonText.SENDING;
+};
+
+const unblockSubmitButton = () => {
+  submitButton.disabled = false;
+  submitButton.textContent = SubmitButtonText.IDLE;
+};
+
+const setFormSubmit = () => {
+  form.addEventListener('submit', (evt) => {
+    evt.preventDefault();
+
+    const isValid = pristine.validate();
+    if (isValid) {
+      blockSubmitButton();
+      sendData(new FormData(evt.target))
+        .then(() => {
+          closeForm();
+          showSuccessMessage();
+        })
+        .catch(() => {
+          showErrorMessage();
+        })
+        .finally(unblockSubmitButton);
+    }
+  });
+};
+
 // Инициализация модуля
 const initForm = () => {
   // eslint-disable-next-line no-console
@@ -227,7 +253,6 @@ const initForm = () => {
 
   fileInput.addEventListener('change', onFileInputChange);
   cancelButton.addEventListener('click', closeForm);
-  form.addEventListener('submit', onFormSubmit);
 
   hashtagsInput.addEventListener('keydown', stopPropagationOnEscape);
   descriptionInput.addEventListener('keydown', stopPropagationOnEscape);
@@ -249,4 +274,4 @@ const initForm = () => {
   console.log('Кнопка должна быть заблокирована:', submitButton.disabled); // Для отладки
 };
 
-export { initForm, closeForm, resetForm };
+export { initForm, closeForm, resetForm, setFormSubmit };
