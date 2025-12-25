@@ -1,12 +1,57 @@
 const SCALE_STEP = 25;
 const SCALE_MIN = 25;
 const SCALE_MAX = 100;
-const SCALE_DEFAULT = 55;
+const SCALE_DEFAULT = 100;
+
+const EFFECTS = {
+  none: {
+    range: { min: 0, max: 100 },
+    start: 100,
+    step: 1,
+    unit: '',
+    connect: 'lower',
+    style: 'none'
+  },
+  chrome: {
+    range: { min: 0, max: 1 },
+    start: 1,
+    step: 0.1,
+    unit: '',
+    style: 'grayscale'
+  },
+  sepia: {
+    range: { min: 0, max: 1 },
+    start: 1,
+    step: 0.1,
+    unit: '',
+    style: 'sepia'
+  },
+  marvin: {
+    range: { min: 0, max: 100 },
+    start: 100,
+    step: 1,
+    unit: '%',
+    style: 'invert'
+  },
+  phobos: {
+    range: { min: 0, max: 3 },
+    start: 3,
+    step: 0.1,
+    unit: 'px',
+    style: 'blur'
+  },
+  heat: {
+    range: { min: 1, max: 3 },
+    start: 3,
+    step: 0.1,
+    unit: '',
+    style: 'brightness'
+  }
+};
 
 let currentScale = SCALE_DEFAULT;
 let isSliderInitialized = false;
 
-let uploadOverlay;
 let imagePreview;
 let scaleValueInput;
 let effectLevelInput;
@@ -14,7 +59,6 @@ let effectSliderContainer;
 let effectRadios;
 
 function initDOMElements() {
-  uploadOverlay = document.querySelector('.img-upload__overlay');
   imagePreview = document.querySelector('.img-upload__preview img');
   scaleValueInput = document.querySelector('.scale__control--value');
   effectLevelInput = document.querySelector('.effect-level__value');
@@ -28,40 +72,51 @@ function initEffectSlider() {
   }
 
   noUiSlider.create(effectSliderContainer, {
-    start: [100],
-    connect: 'lower',
     range: {
-      'min': 0,
-      'max': 100
+      min: 0,
+      max: 100,
     },
+    start: 100,
     step: 1,
+    connect: 'lower',
     format: {
-      to: function(value) {
-        return Math.round(value);
+      to: function (value) {
+        if (Number.isInteger(value)) {
+          return value.toFixed(0);
+        }
+        return value.toFixed(1);
       },
-      from: function(value) {
-        return Number(value);
-      }
-    }
+      from: function (value) {
+        return parseFloat(value);
+      },
+    },
   });
 
   isSliderInitialized = true;
 
-  effectSliderContainer.noUiSlider.on('update', (values) => {
-    const value = Math.round(values[0]);
+  effectSliderContainer.noUiSlider.on('update', () => {
+    const value = effectSliderContainer.noUiSlider.get();
     updateEffectLevel(value);
   });
 }
 
 function resetEffectSlider() {
-  if (!effectSliderContainer || !isSliderInitialized) {
+  if (!effectSliderContainer) {
     return;
   }
 
-  effectSliderContainer.closest('.effect-level').classList.add('hidden');
-  effectSliderContainer.noUiSlider.set(100);
+  effectSliderContainer.closest('.img-upload__effect-level').classList.add('hidden');
+
+  if (isSliderInitialized) {
+    effectSliderContainer.noUiSlider.set(100);
+  }
+
   if (effectLevelInput) {
     effectLevelInput.value = '';
+  }
+
+  if (imagePreview) {
+    imagePreview.style.filter = 'none';
   }
 }
 
@@ -76,38 +131,19 @@ function updateEffectLevel(value) {
   applyEffect(selectedEffect, value);
 }
 
-function applyEffect(effectName, level = 100) {
+function applyEffect(effectName, level) {
   if (!imagePreview) {
     return;
   }
 
-  imagePreview.style.filter = '';
+  const effect = EFFECTS[effectName] || EFFECTS.none;
 
-  switch(effectName) {
-    case 'chrome':
-      imagePreview.style.filter = `grayscale(${level / 100})`;
-      break;
-    case 'sepia':
-      imagePreview.style.filter = `sepia(${level / 100})`;
-      break;
-    case 'marvin':
-      imagePreview.style.filter = `invert(${level}%)`;
-      break;
-    case 'phobos':
-      // eslint-disable-next-line no-case-declarations
-      const blurValue = (level / 100) * 3;
-      imagePreview.style.filter = `blur(${blurValue}px)`;
-      break;
-    case 'heat':
-      // eslint-disable-next-line no-case-declarations
-      const brightnessValue = 1 + (level / 100) * 2;
-      imagePreview.style.filter = `brightness(${brightnessValue})`;
-      break;
-    case 'none':
-    default:
-      imagePreview.style.filter = 'none';
-      break;
+  if (effect.style === 'none') {
+    imagePreview.style.filter = 'none';
+    return;
   }
+
+  imagePreview.style.filter = `${effect.style}(${level}${effect.unit})`;
 }
 
 function updateScaleValue() {
@@ -135,6 +171,14 @@ function resetScale() {
   updateScaleValue();
 }
 
+function resetImage() {
+  if (imagePreview) {
+    imagePreview.src = 'img/upload-default-image.jpg';
+    imagePreview.style.filter = '';
+    imagePreview.style.transform = '';
+  }
+}
+
 function initEventHandlers() {
   const scaleSmallerBtn = document.querySelector('.scale__control--smaller');
   const scaleBiggerBtn = document.querySelector('.scale__control--bigger');
@@ -149,11 +193,11 @@ function initEventHandlers() {
 
   effectRadios.forEach((radio) => {
     radio.addEventListener('change', function() {
-      resetScale();
-      resetEffectSlider();
+      const effectName = this.value;
+      const effectConfig = EFFECTS[effectName];
+      const effectSlider = effectSliderContainer.closest('.img-upload__effect-level');
 
-      if (this.value !== 'none') {
-        const effectSlider = effectSliderContainer.closest('.effect-level');
+      if (effectName !== 'none') {
         if (effectSlider) {
           effectSlider.classList.remove('hidden');
         }
@@ -162,64 +206,22 @@ function initEventHandlers() {
           initEffectSlider();
         }
 
-        effectSliderContainer.noUiSlider.set(100);
-        updateEffectLevel(100);
+        effectSliderContainer.noUiSlider.updateOptions({
+          range: effectConfig.range,
+          step: effectConfig.step,
+          start: effectConfig.start,
+        });
+
+        // Force update to apply the start value immediately
+        effectSliderContainer.noUiSlider.set(effectConfig.start);
       } else {
+        if (effectSlider) {
+          effectSlider.classList.add('hidden');
+        }
         applyEffect('none');
       }
     });
   });
-
-  const uploadFileInput = document.getElementById('upload-file');
-  if (uploadFileInput) {
-    uploadFileInput.addEventListener('change', function() {
-      if (uploadOverlay) {
-        uploadOverlay.classList.remove('hidden');
-      }
-
-      resetScale();
-      resetEffectSlider();
-
-      const noneEffectRadio = document.getElementById('effect-none');
-      if (noneEffectRadio) {
-        noneEffectRadio.checked = true;
-        applyEffect('none');
-      }
-
-      if (this.files && this.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          if (imagePreview) {
-            imagePreview.src = e.target.result;
-          }
-        };
-        reader.readAsDataURL(this.files[0]);
-      }
-    });
-  }
-
-  const cancelBtn = document.getElementById('upload-cancel');
-  if (cancelBtn) {
-    cancelBtn.addEventListener('click', () => {
-      if (uploadOverlay) {
-        uploadOverlay.classList.add('hidden');
-      }
-
-      const uploadForm = document.getElementById('upload-select-image');
-      if (uploadForm) {
-        uploadForm.reset();
-      }
-
-      resetScale();
-      resetEffectSlider();
-
-      if (imagePreview) {
-        imagePreview.src = 'img/upload-default-image.jpg';
-        imagePreview.style.filter = '';
-        imagePreview.style.transform = '';
-      }
-    });
-  }
 }
 
 // Основная функция инициализации
@@ -235,6 +237,8 @@ export {
   scaleDown,
   scaleUp,
   resetScale,
+  resetEffectSlider,
+  resetImage,
   applyEffect,
   updateEffectLevel
 };
