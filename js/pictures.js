@@ -1,4 +1,3 @@
-import { generatePhotosArray } from './data.js';
 import { openFullPhoto } from './big-photo.js';
 
 // Сохраняем данные фотографий в глобальной переменной для доступа из обработчиков
@@ -22,8 +21,8 @@ const createThumbnailElement = (photo) => {
 };
 
 // Функция для отрисовки всех миниатюр
-const renderThumbnails = () => {
-  photosData = generatePhotosArray(); // Сохраняем данные в глобальную переменную
+const renderThumbnails = (photos) => {
+  photosData = photos; // Сохраняем данные в глобальную переменную
   const picturesContainer = document.querySelector('.pictures');
   if (!picturesContainer) {
     return;

@@ -1,31 +1,24 @@
-import { generatePhotosArray } from './data.js';
 import { renderThumbnails, initThumbnailsHandlers } from './pictures.js';
-import { initForm } from './form.js';
+import { initForm, setFormSubmit } from './form.js';
 import { initScaleEditor } from './scale-photo.js';
+import { getData } from './api.js';
+import { showAlert } from './message.js';
 
-const photosArray = generatePhotosArray();
+getData()
+  .then((photos) => {
+    renderThumbnails(photos);
+    initThumbnailsHandlers();
+  })
+  .catch((err) => {
+    showAlert(err.message);
+  });
 
-// eslint-disable-next-line no-console
-console.log('Сгенерированный массив фотографий:', photosArray);
-
-export { photosArray };
-
-document.addEventListener('DOMContentLoaded', () => {
-  renderThumbnails();
-});
-
-// Инициализация приложения
-const initApp = () => {
-  renderThumbnails();
-  initThumbnailsHandlers();
-};
+setFormSubmit();
 
 // Инициализация формы при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
   initForm();
 });
-// Запускаем приложение после загрузки DOM
-document.addEventListener('DOMContentLoaded', initApp);
 
 // Ждем загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {

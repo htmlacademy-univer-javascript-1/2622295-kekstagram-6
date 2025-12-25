@@ -29,3 +29,5 @@ function isMeetingWithinWorkHours(workStart, workEnd, meetingStart, duration) {
 
   return meetingStartTotal >= workStartTotal && meetingEndTotal <= workEndTotal;
 }
+
+export { maxStringLength, isPalindrome, isMeetingWithinWorkHours };
