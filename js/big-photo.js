@@ -4,10 +4,11 @@ const socialComments = bigPicture.querySelector('.social__comments');
 const commentsCount = bigPicture.querySelector('.social__comment-count');
 const commentsLoader = bigPicture.querySelector('.comments-loader');
 
+const COMMENTS_PER_PORTION = 5;
+
 // Переменные для управления комментариями
 let currentComments = [];
 let commentsShown = 0;
-const COMMENTS_PER_PORTION = 5;
 
 // Функция для создания элемента комментария
 const createCommentElement = (comment) => {

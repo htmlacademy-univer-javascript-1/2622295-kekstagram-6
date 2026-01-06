@@ -2,6 +2,7 @@ const SCALE_STEP = 25;
 const SCALE_MIN = 25;
 const SCALE_MAX = 100;
 const SCALE_DEFAULT = 100;
+const DEFAULT_EFFECT_LEVEL = 100;
 
 const EFFECTS = {
   none: {
@@ -50,6 +51,7 @@ const EFFECTS = {
 };
 
 let currentScale = SCALE_DEFAULT;
+let currentEffect = 'none';
 let isSliderInitialized = false;
 
 let imagePreview;
@@ -108,7 +110,7 @@ function resetEffectSlider() {
   effectSliderContainer.closest('.img-upload__effect-level').classList.add('hidden');
 
   if (isSliderInitialized) {
-    effectSliderContainer.noUiSlider.set(100);
+    effectSliderContainer.noUiSlider.set(DEFAULT_EFFECT_LEVEL);
   }
 
   if (effectLevelInput) {
@@ -118,6 +120,7 @@ function resetEffectSlider() {
   if (imagePreview) {
     imagePreview.style.filter = 'none';
   }
+  currentEffect = 'none';
 }
 
 function updateEffectLevel(value) {
@@ -127,8 +130,7 @@ function updateEffectLevel(value) {
 
   effectLevelInput.value = value;
 
-  const selectedEffect = document.querySelector('input[name="effect"]:checked').value;
-  applyEffect(selectedEffect, value);
+  applyEffect(currentEffect, value);
 }
 
 function applyEffect(effectName, level) {
@@ -156,12 +158,12 @@ function updateScaleValue() {
   }
 }
 
-function scaleDown() {
+function onScaleSmallerClick() {
   currentScale = Math.max(currentScale - SCALE_STEP, SCALE_MIN);
   updateScaleValue();
 }
 
-function scaleUp() {
+function onScaleBiggerClick() {
   currentScale = Math.min(currentScale + SCALE_STEP, SCALE_MAX);
   updateScaleValue();
 }
@@ -184,16 +186,17 @@ function initEventHandlers() {
   const scaleBiggerBtn = document.querySelector('.scale__control--bigger');
 
   if (scaleSmallerBtn) {
-    scaleSmallerBtn.addEventListener('click', scaleDown);
+    scaleSmallerBtn.addEventListener('click', onScaleSmallerClick);
   }
 
   if (scaleBiggerBtn) {
-    scaleBiggerBtn.addEventListener('click', scaleUp);
+    scaleBiggerBtn.addEventListener('click', onScaleBiggerClick);
   }
 
   effectRadios.forEach((radio) => {
     radio.addEventListener('change', function() {
       const effectName = this.value;
+      currentEffect = effectName;
       const effectConfig = EFFECTS[effectName];
       const effectSlider = effectSliderContainer.closest('.img-upload__effect-level');
 
@@ -225,7 +228,7 @@ function initEventHandlers() {
 }
 
 // Основная функция инициализации
-export function initScaleEditor() {
+function initScaleEditor() {
   initDOMElements();
   updateScaleValue();
   resetEffectSlider();
@@ -234,8 +237,9 @@ export function initScaleEditor() {
 
 // Экспорт функций для внешнего использования
 export {
-  scaleDown,
-  scaleUp,
+  initScaleEditor,
+  onScaleSmallerClick,
+  onScaleBiggerClick,
   resetScale,
   resetEffectSlider,
   resetImage,
