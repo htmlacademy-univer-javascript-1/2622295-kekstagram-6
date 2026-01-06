@@ -1,6 +1,7 @@
 import { sendData } from './api.js';
-import { showSuccessMessage, showErrorMessage } from './message.js';
+import { showSuccessMessage, showErrorMessage, isErrorMessageShown } from './message.js';
 import { resetScale, resetEffectSlider, resetImage } from './scale-photo.js';
+import { isEscapeKey } from './util.js';
 
 // Элементы формы
 const form = document.querySelector('.img-upload__form');
@@ -10,6 +11,8 @@ const cancelButton = document.querySelector('#upload-cancel');
 const hashtagsInput = document.querySelector('.text__hashtags');
 const descriptionInput = document.querySelector('.text__description');
 const submitButton = document.querySelector('#upload-submit');
+
+const MAX_HASHTAG_COUNT = 5;
 
 // Добавляем action атрибут форме
 form.setAttribute('action', 'https://echo.htmlacademy.ru');
@@ -29,7 +32,7 @@ const pristine = new Pristine(form, {
   errorTextClass: 'img-upload__error'
 });
 
-// Валидация хэш-тегов - теперь пустые значения НЕ валидны
+// Валидация хэш-тегов
 const validateHashtags = (value) => {
   const normalizedValue = value.trim();
   if (!normalizedValue) {
@@ -37,7 +40,7 @@ const validateHashtags = (value) => {
   }
 
   const hashtags = normalizedValue.split(/\s+/);
-  if (hashtags.length > 5) {
+  if (hashtags.length > MAX_HASHTAG_COUNT) {
     return false;
   }
 
@@ -58,13 +61,13 @@ const validateHashtags = (value) => {
   return true;
 };
 
-// Валидация комментария - теперь пустые значения НЕ валидны
+// Валидация комментария
 const validateDescription = (value) => !value || value.length <= 140;
 
 // Сообщения об ошибках
-const getHashtagsErrorMessage = () => 'Обязательное поле. До 5 хэш-тегов, разделенных пробелами. Хэш-тег начинается с #, содержит буквы и цифры (1-19 символов), не может повторяться';
+const getHashtagsErrorMessage = () => 'До 5 хэш-тегов, разделенных пробелами. Хэш-тег начинается с #, содержит буквы и цифры (1-19 символов), не может повторяться';
 
-const getDescriptionErrorMessage = () => 'Обязательное поле. Длина комментария не может превышать 140 символов';
+const getDescriptionErrorMessage = () => 'Длина комментария не может превышать 140 символов';
 
 // Добавление валидаторов
 pristine.addValidator(
@@ -79,8 +82,26 @@ pristine.addValidator(
   getDescriptionErrorMessage
 );
 
+// Функция для удаления ошибки из DOM
+function clearErrorFromDOM(input) {
+  // eslint-disable-next-line no-underscore-dangle
+  const field = pristine.fields.find((f) => f.input === input);
+  if (field && field.errorElements) {
+    const errorTextElement = field.errorElements[1];
+    if (errorTextElement) {
+      errorTextElement.remove();
+    }
+    field.errorElements = null;
+  }
+
+  // Дополнительная страховка: ищем элементы по классу и удаляем их
+  const errorClass = pristine.config.errorTextClass;
+  const errorElements = input.parentElement.querySelectorAll(`.${errorClass}`);
+  errorElements.forEach((el) => el.remove());
+}
+
 // Функция проверки, можно ли разблокировать кнопку
-const canEnableSubmitButton = () => {
+function canEnableSubmitButton() {
   // Проверяем что оба поля валидны
   const isHashtagsValid = pristine.validate(hashtagsInput);
   const isDescriptionValid = pristine.validate(descriptionInput);
@@ -88,19 +109,17 @@ const canEnableSubmitButton = () => {
   // Если поля валидны, удаляем скрытые элементы ошибок из DOM,
   // чтобы они не мешали тестам (Cypress проверяет их отсутствие/видимость)
   if (isHashtagsValid) {
-    // eslint-disable-next-line no-use-before-define
     clearErrorFromDOM(hashtagsInput);
   }
   if (isDescriptionValid) {
-    // eslint-disable-next-line no-use-before-define
     clearErrorFromDOM(descriptionInput);
   }
 
   return isHashtagsValid && isDescriptionValid;
-};
+}
 
 // Функция обновления состояния кнопки
-const updateSubmitButtonState = () => {
+function updateSubmitButtonState() {
   const isValid = canEnableSubmitButton();
 
   submitButton.disabled = !isValid;
@@ -114,13 +133,12 @@ const updateSubmitButtonState = () => {
     submitButton.style.opacity = '0.6';
     submitButton.style.cursor = 'not-allowed';
   }
-};
+}
 
 // Открытие формы редактирования
-const openForm = () => {
+function openForm() {
   overlay.classList.remove('hidden');
   document.body.classList.add('modal-open');
-  // eslint-disable-next-line no-use-before-define
   document.addEventListener('keydown', onDocumentKeydown);
 
   // Сбрасываем ошибки валидации при открытии
@@ -130,25 +148,27 @@ const openForm = () => {
 
   // При открытии формы блокируем кнопку (поля пустые)
   updateSubmitButtonState();
-};
+}
 
 // Закрытие формы редактирования
-const closeForm = () => {
+function closeForm() {
   overlay.classList.add('hidden');
   document.body.classList.remove('modal-open');
-  // eslint-disable-next-line no-use-before-define
   document.removeEventListener('keydown', onDocumentKeydown);
-  // eslint-disable-next-line no-use-before-define
   resetForm();
-  
+
   // Дополнительно очищаем ошибки при закрытии
   pristine.reset();
   clearErrorFromDOM(hashtagsInput);
   clearErrorFromDOM(descriptionInput);
-};
+}
+
+function onCloseButtonClick() {
+  closeForm();
+}
 
 // Полный сброс формы
-const resetForm = () => {
+function resetForm() {
   form.reset();
   pristine.reset();
   fileInput.value = '';
@@ -158,13 +178,13 @@ const resetForm = () => {
 
   // Сбрасываем состояние кнопки (будет заблокирована)
   updateSubmitButtonState();
-};
+}
 
 // Обработчик клавиатуры
-const onDocumentKeydown = (evt) => {
-  if (evt.key === 'Escape') {
+function onDocumentKeydown(evt) {
+  if (isEscapeKey(evt)) {
     // Если открыто сообщение об ошибке, не закрываем форму
-    if (document.querySelector('.error')) {
+    if (isErrorMessageShown()) {
       return;
     }
 
@@ -177,87 +197,70 @@ const onDocumentKeydown = (evt) => {
       closeForm();
     }
   }
-};
+}
 
 const FILE_TYPES = ['jpg', 'jpeg', 'png'];
 const photoPreview = document.querySelector('.img-upload__preview img');
 const effectsPreviews = document.querySelectorAll('.effects__preview');
 
 // Обработчик выбора файла
-const onFileInputChange = () => {
+function onFileInputChange() {
   const file = fileInput.files[0];
   const fileName = file.name.toLowerCase();
 
   const matches = FILE_TYPES.some((it) => fileName.endsWith(it));
 
   if (matches) {
-    photoPreview.src = URL.createObjectURL(file);
+    const url = URL.createObjectURL(file);
+    photoPreview.src = url;
     effectsPreviews.forEach((preview) => {
-      preview.style.backgroundImage = `url(${URL.createObjectURL(file)})`;
+      preview.style.backgroundImage = `url(${url})`;
     });
     openForm();
   }
-};
+}
 
 // Обработчик для предотвращения закрытия формы при фокусе
-const stopPropagationOnEscape = (evt) => {
-  if (evt.key === 'Escape') {
+function onFieldKeydown(evt) {
+  if (isEscapeKey(evt)) {
     evt.stopPropagation();
   }
-};
-
-// Функция для удаления ошибки из DOM
-const clearErrorFromDOM = (input) => {
-  // eslint-disable-next-line no-underscore-dangle
-  const field = pristine.fields.find((f) => f.input === input);
-  if (field && field.errorElements) {
-    const errorTextElement = field.errorElements[1];
-    if (errorTextElement) {
-      errorTextElement.remove();
-    }
-    field.errorElements = null;
-  }
-  
-  // Дополнительная страховка: ищем элементы по классу и удаляем их
-  const errorClass = pristine.config.errorTextClass;
-  const errorElements = input.parentElement.querySelectorAll(`.${errorClass}`);
-  errorElements.forEach((el) => el.remove());
-};
+}
 
 // Обработчики ввода данных
-const onHashtagsInput = () => {
+function onHashtagsInput() {
   // Даем небольшую задержку для обновления валидации
   setTimeout(() => {
     updateSubmitButtonState();
   }, 10);
-};
+}
 
-const onDescriptionInput = () => {
+function onDescriptionInput() {
   setTimeout(() => {
     updateSubmitButtonState();
   }, 10);
-};
+}
 
 const SubmitButtonText = {
   IDLE: 'Опубликовать',
   SENDING: 'Публикую...'
 };
 
-const blockSubmitButton = () => {
+function blockSubmitButton() {
   submitButton.disabled = true;
   submitButton.textContent = SubmitButtonText.SENDING;
   submitButton.style.opacity = '0.6';
   submitButton.style.cursor = 'not-allowed';
-};
+}
 
-const unblockSubmitButton = () => {
+function unblockSubmitButton() {
   submitButton.disabled = false;
   submitButton.textContent = SubmitButtonText.IDLE;
   submitButton.style.opacity = '1';
   submitButton.style.cursor = 'pointer';
-};
+}
 
-const setFormSubmit = () => {
+function setFormSubmit() {
   form.addEventListener('submit', (evt) => {
     evt.preventDefault();
 
@@ -275,18 +278,15 @@ const setFormSubmit = () => {
         .finally(unblockSubmitButton);
     }
   });
-};
+}
 
 // Инициализация модуля
-const initForm = () => {
-  // eslint-disable-next-line no-console
-  console.log('Инициализация формы...'); // Для отладки
-
+function initForm() {
   fileInput.addEventListener('change', onFileInputChange);
-  cancelButton.addEventListener('click', closeForm);
+  cancelButton.addEventListener('click', onCloseButtonClick);
 
-  hashtagsInput.addEventListener('keydown', stopPropagationOnEscape);
-  descriptionInput.addEventListener('keydown', stopPropagationOnEscape);
+  hashtagsInput.addEventListener('keydown', onFieldKeydown);
+  descriptionInput.addEventListener('keydown', onFieldKeydown);
 
   // Слушаем ввод в полях для обновления состояния кнопки
   hashtagsInput.addEventListener('input', onHashtagsInput);
@@ -296,13 +296,10 @@ const initForm = () => {
   hashtagsInput.addEventListener('blur', onHashtagsInput);
   descriptionInput.addEventListener('blur', onDescriptionInput);
 
-  // Принудительно блокируем кнопку при инициализации
-  submitButton.disabled = true;
-  submitButton.textContent = 'Заполните обязательные поля';
-  submitButton.style.opacity = '0.6';
-  submitButton.style.cursor = 'not-allowed';
-  // eslint-disable-next-line no-console
-  console.log('Кнопка должна быть заблокирована:', submitButton.disabled); // Для отладки
-};
+  submitButton.disabled = false;
+  submitButton.textContent = 'Опубликовать';
+  submitButton.style.opacity = '1';
+  submitButton.style.cursor = 'pointer';
+}
 
 export { initForm, closeForm, resetForm, setFormSubmit };

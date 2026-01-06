@@ -17,15 +17,5 @@ getData()
   });
 
 setFormSubmit();
-
-// Инициализация формы при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-  initForm();
-});
-
-// Ждем загрузки DOM
-document.addEventListener('DOMContentLoaded', () => {
-  initScaleEditor();
-  // eslint-disable-next-line no-console
-  console.log('Scale editor initialized');
-});
+initForm();
+initScaleEditor();
