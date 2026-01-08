@@ -61,11 +61,12 @@ let effectSliderContainer;
 let effectRadios;
 
 function initDOMElements() {
-  imagePreview = document.querySelector('.img-upload__preview img');
-  scaleValueInput = document.querySelector('.scale__control--value');
-  effectLevelInput = document.querySelector('.effect-level__value');
-  effectSliderContainer = document.querySelector('.effect-level__slider');
-  effectRadios = document.querySelectorAll('input[name="effect"]');
+  const form = document.querySelector('.img-upload__form');
+  imagePreview = form.querySelector('.img-upload__preview img');
+  scaleValueInput = form.querySelector('.scale__control--value');
+  effectLevelInput = form.querySelector('.effect-level__value');
+  effectSliderContainer = form.querySelector('.effect-level__slider');
+  effectRadios = form.querySelectorAll('input[name="effect"]');
 }
 
 function initEffectSlider() {
@@ -182,8 +183,9 @@ function resetImage() {
 }
 
 function initEventHandlers() {
-  const scaleSmallerBtn = document.querySelector('.scale__control--smaller');
-  const scaleBiggerBtn = document.querySelector('.scale__control--bigger');
+  const form = document.querySelector('.img-upload__form');
+  const scaleSmallerBtn = form.querySelector('.scale__control--smaller');
+  const scaleBiggerBtn = form.querySelector('.scale__control--bigger');
 
   if (scaleSmallerBtn) {
     scaleSmallerBtn.addEventListener('click', onScaleSmallerClick);
