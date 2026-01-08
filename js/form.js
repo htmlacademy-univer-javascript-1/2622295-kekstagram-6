@@ -3,16 +3,17 @@ import { showSuccessMessage, showErrorMessage, isErrorMessageShown } from './mes
 import { resetScale, resetEffectSlider, resetImage } from './scale-photo.js';
 import { isEscapeKey } from './util.js';
 
+const MAX_HASHTAG_COUNT = 5;
+const MAX_COMMENT_LENGTH = 140;
+
 // Элементы формы
 const form = document.querySelector('.img-upload__form');
-const fileInput = document.querySelector('#upload-file');
-const overlay = document.querySelector('.img-upload__overlay');
-const cancelButton = document.querySelector('#upload-cancel');
-const hashtagsInput = document.querySelector('.text__hashtags');
-const descriptionInput = document.querySelector('.text__description');
-const submitButton = document.querySelector('#upload-submit');
-
-const MAX_HASHTAG_COUNT = 5;
+const fileInput = form.querySelector('#upload-file');
+const overlay = form.querySelector('.img-upload__overlay');
+const cancelButton = form.querySelector('#upload-cancel');
+const hashtagsInput = form.querySelector('.text__hashtags');
+const descriptionInput = form.querySelector('.text__description');
+const submitButton = form.querySelector('#upload-submit');
 
 // Добавляем action атрибут форме
 form.setAttribute('action', 'https://echo.htmlacademy.ru');
@@ -62,7 +63,7 @@ const validateHashtags = (value) => {
 };
 
 // Валидация комментария
-const validateDescription = (value) => !value || value.length <= 140;
+const validateDescription = (value) => !value || value.length <= MAX_COMMENT_LENGTH;
 
 // Сообщения об ошибках
 const getHashtagsErrorMessage = () => 'До 5 хэш-тегов, разделенных пробелами. Хэш-тег начинается с #, содержит буквы и цифры (1-19 символов), не может повторяться';
@@ -84,7 +85,6 @@ pristine.addValidator(
 
 // Функция для удаления ошибки из DOM
 function clearErrorFromDOM(input) {
-  // eslint-disable-next-line no-underscore-dangle
   const field = pristine.fields.find((f) => f.input === input);
   if (field && field.errorElements) {
     const errorTextElement = field.errorElements[1];
@@ -200,8 +200,8 @@ function onDocumentKeydown(evt) {
 }
 
 const FILE_TYPES = ['jpg', 'jpeg', 'png'];
-const photoPreview = document.querySelector('.img-upload__preview img');
-const effectsPreviews = document.querySelectorAll('.effects__preview');
+const photoPreview = form.querySelector('.img-upload__preview img');
+const effectsPreviews = form.querySelectorAll('.effects__preview');
 
 // Обработчик выбора файла
 function onFileInputChange() {
